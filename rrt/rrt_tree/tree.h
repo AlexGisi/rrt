@@ -10,6 +10,7 @@
 #include <memory>
 #include <unordered_map>
 #include <stack>
+#include <rrt_logging/util.h>
 
 namespace rrt::tree {
 

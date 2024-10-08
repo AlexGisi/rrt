@@ -30,40 +30,12 @@ DubinsState DubinsState::sample(float px_lower, float px_upper, float py_lower, 
     return {_px, _py, _theta, _v, _phi };
 }
 
-float DubinsState::distance(DubinsState state0, DubinsState state1) {
+float DubinsState::weighted_distance(DubinsState state0, DubinsState state1) {
     float w_x = 0.1;
     float w_y = 0.1;
     float w_theta = 0.1;
     float w_v = 0.1;
     float w_phi = 0.1;
-
-    // w0
-//    float w_x = 0.1;
-//    float w_y = 0.1;
-//    float w_theta = 0.00001;
-//    float w_v = 0.00001;
-//    float w_phi = 0.00001;
-
-    // w1
-//    float w_x = 0.00001;
-//    float w_y = 0.00001;
-//    float w_theta = 0.1;
-//    float w_v = 0.1;
-//    float w_phi = 0.1;
-
-    // w2
-//    float w_x = 0.1;
-//    float w_y = 0.00001;
-//    float w_theta = 0.00001;
-//    float w_v = 0.00001;
-//    float w_phi = 0.00001;
-
-    // w3
-//    float w_x = 0.00001;
-//    float w_y = 0.1;
-//    float w_theta = 0.00001;
-//    float w_v = 0.00001;
-//    float w_phi = 0.00001;
 
     float dx = std::pow(state0.px - state1.px, 2);
     float dy = std::pow(state0.py - state1.py, 2);
@@ -72,6 +44,11 @@ float DubinsState::distance(DubinsState state0, DubinsState state1) {
     float dphi = std::pow(state0.phi - state1.phi, 2);
 
     float d = w_x * dx + w_y * dy + w_theta * dtheta + w_v * dv + w_phi * dphi;
+    return std::sqrt(d);
+}
+
+float DubinsState::euclidean_distance(DubinsState state0, DubinsState state1) {
+    float d = std::pow(state0.px - state1.px, 2) + std::pow(state0.py - state1.py, 2);
     return std::sqrt(d);
 }
 
@@ -89,11 +66,13 @@ std::string DubinsState::log() {
 
 void DubinsCar::step(DubinsCommand command, float dt) {
     DubinsState state1;
-    state1.px = state.px + (state.v * cos(state.theta)) * dt;
-    state1.py = state.py + (state.v * sin(state.theta)) * dt;
-    state1.theta = state.theta + ((state.v / l) * tan(state.phi)) * dt;
+
     state1.v = state.v + command.a * dt;
     state1.phi = state.phi + command.psi * dt;
+
+    state1.px = state.px + (state1.v * cos(state.theta)) * dt;
+    state1.py = state.py + (state1.v * sin(state.theta)) * dt;
+    state1.theta = state.theta + ((state1.v / l) * tan(state1.phi)) * dt;
 
     state1.theta = rrt::util::wrap_angle(state1.theta);
     state = state1;

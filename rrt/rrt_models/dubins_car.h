@@ -15,7 +15,8 @@ public:
     DubinsState(float _px, float _py, float _theta, float _v, float _phi) : px(_px), py(_py), theta(_theta), v(_v), phi(_phi) {}
 
     static DubinsState sample(float px_lower, float px_upper, float py_lower, float py_upper);
-    static float distance(DubinsState state0, DubinsState state1);
+    static float weighted_distance(DubinsState state0, DubinsState state1);
+    static float euclidean_distance(DubinsState state0, DubinsState state1);
 
     bool violates_constraints() const;
 
