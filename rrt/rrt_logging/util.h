@@ -16,6 +16,8 @@ namespace rrt::util {
 
 float rand(float a, float b);
 void create_directory(const std::filesystem::path& fp);
+float geodesic_distance(float theta0, float theta1);
+float wrap_angle(float theta);
 
 template<typename T>
 std::string comma_join(const std::vector<T> &values) {

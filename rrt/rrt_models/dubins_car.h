@@ -14,9 +14,12 @@ public:
     DubinsState() = default;
     DubinsState(float _px, float _py, float _theta, float _v, float _phi) : px(_px), py(_py), theta(_theta), v(_v), phi(_phi) {}
 
+    static DubinsState sample(float px_lower, float px_upper, float py_lower, float py_upper);
+    static float distance(DubinsState state0, DubinsState state1);
+
     bool violates_constraints() const;
 
-    std::string log_header();
+    static std::string log_header();
     std::string log();
 
     float px = 0;
@@ -24,6 +27,11 @@ public:
     float theta = 0;
     float v = 0;
     float phi = 0;
+
+    static float v_max;
+    static float v_min;
+    static float phi_max;
+    static float phi_min;
 };
 
 class DubinsCommand {
@@ -31,12 +39,12 @@ public:
     DubinsCommand(float _a, float _psi) : a(_a), psi(_psi) {};
 
     static DubinsCommand sample() {
-        float a = rrt::util::rand(-10, 10);
-        float psi = rrt::util::rand(-3, 3);
+        float a = rrt::util::rand(a_min, a_max);
+        float psi = rrt::util::rand(psi_min, psi_max);
         return {a, psi};
     }
 
-    std::string log_header() {
+    static std::string log_header() {
         return {"a,psi"};
     }
     std::string log() {
@@ -45,6 +53,11 @@ public:
 
     float a;
     float psi;
+
+    static float a_min;
+    static float a_max;
+    static float psi_min;
+    static float psi_max;
 };
 
 class DubinsCar {

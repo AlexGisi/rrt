@@ -10,12 +10,72 @@
 
 namespace rrt::models {
 
-bool DubinsState::violates_constraints() const {
-    float v_max = 5;
-    float v_min = -5;
-    float phi_max = M_PI / 3;
-    float phi_min = -M_PI / 3;
+float DubinsState::v_max = 5;
+float DubinsState::v_min = -5;
+float DubinsState::phi_max = M_PI / 3;
+float DubinsState::phi_min = -M_PI / 3;
 
+float DubinsCommand::a_min = -10;
+float DubinsCommand::a_max = 10;
+float DubinsCommand::psi_min = -3;
+float DubinsCommand::psi_max = 3;
+
+DubinsState DubinsState::sample(float px_lower, float px_upper, float py_lower, float py_upper) {
+    float _px = rrt::util::rand(px_lower, px_upper);
+    float _py = rrt::util::rand(py_lower, py_upper);
+    float _theta = rrt::util::rand(0, 2*M_PI);
+    float _v = rrt::util::rand(v_min, v_max);
+    float _phi = rrt::util::rand(phi_min, phi_max);
+
+    return {_px, _py, _theta, _v, _phi };
+}
+
+float DubinsState::distance(DubinsState state0, DubinsState state1) {
+    float w_x = 0.1;
+    float w_y = 0.1;
+    float w_theta = 0.1;
+    float w_v = 0.1;
+    float w_phi = 0.1;
+
+    // w0
+//    float w_x = 0.1;
+//    float w_y = 0.1;
+//    float w_theta = 0.00001;
+//    float w_v = 0.00001;
+//    float w_phi = 0.00001;
+
+    // w1
+//    float w_x = 0.00001;
+//    float w_y = 0.00001;
+//    float w_theta = 0.1;
+//    float w_v = 0.1;
+//    float w_phi = 0.1;
+
+    // w2
+//    float w_x = 0.1;
+//    float w_y = 0.00001;
+//    float w_theta = 0.00001;
+//    float w_v = 0.00001;
+//    float w_phi = 0.00001;
+
+    // w3
+//    float w_x = 0.00001;
+//    float w_y = 0.1;
+//    float w_theta = 0.00001;
+//    float w_v = 0.00001;
+//    float w_phi = 0.00001;
+
+    float dx = std::pow(state0.px - state1.px, 2);
+    float dy = std::pow(state0.py - state1.py, 2);
+    float dtheta = std::pow(rrt::util::geodesic_distance(state0.theta, state1.theta), 2);
+    float dv = std::pow(state0.v - state1.v, 2);
+    float dphi = std::pow(state0.phi - state1.phi, 2);
+
+    float d = w_x * dx + w_y * dy + w_theta * dtheta + w_v * dv + w_phi * dphi;
+    return std::sqrt(d);
+}
+
+bool DubinsState::violates_constraints() const {
     return v < v_min || v > v_max || phi < phi_min || phi > phi_max;
 }
 
@@ -28,10 +88,6 @@ std::string DubinsState::log() {
 }
 
 void DubinsCar::step(DubinsCommand command, float dt) {
-    if (dt > 0.1) {
-        throw std::runtime_error("Timestep must be less than 0.1, was " + std::to_string(dt));
-    }
-
     DubinsState state1;
     state1.px = state.px + (state.v * cos(state.theta)) * dt;
     state1.py = state.py + (state.v * sin(state.theta)) * dt;
@@ -39,6 +95,7 @@ void DubinsCar::step(DubinsCommand command, float dt) {
     state1.v = state.v + command.a * dt;
     state1.phi = state.phi + command.psi * dt;
 
+    state1.theta = rrt::util::wrap_angle(state1.theta);
     state = state1;
 }
 

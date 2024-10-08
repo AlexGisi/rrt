@@ -13,14 +13,14 @@
 
 namespace rrt::tree {
 
-template <typename T>
+template <typename Loggable>
 class TreeNode {
 public:
-    T data;
-    std::weak_ptr<TreeNode<T>> parent;
-    std::vector<std::shared_ptr<TreeNode<T>>> children;
+    Loggable data;
+    std::weak_ptr<TreeNode<Loggable>> parent;
+    std::vector<std::shared_ptr<TreeNode<Loggable>>> children;
 
-    TreeNode(const T& data) : data(data) {}
+    explicit TreeNode(const Loggable& data) : data(data) {}
 };
 
 template <typename T>
@@ -28,7 +28,7 @@ class Tree {
 public:
     using NodePtr = std::shared_ptr<TreeNode<T>>;
 
-    Tree() {}
+    Tree() = default;
 
     NodePtr add_root(const T& data) {
         root = std::make_shared<TreeNode<T>>(data);
@@ -46,6 +46,16 @@ public:
 
     const std::vector<NodePtr>& get_all_nodes() const {
         return nodes;
+    }
+
+    std::vector<NodePtr> get_all_leafs() const {
+        std::vector<NodePtr> leafs;
+        for (auto n : nodes) {
+            if (n->children.empty()) {
+                leafs.push_back(n);
+            }
+        }
+        return leafs;
     }
 
     std::vector<NodePtr> traverse_to_root(NodePtr leaf) const {
@@ -71,6 +81,26 @@ public:
             }
         }
         return nearest;
+    }
+
+    std::string log_header() {
+        std::string data_header = T::log_header();
+        std::string header = "branch," + data_header;
+        return header;
+    }
+
+    std::string log() {
+        std::string log_str;
+        auto leafs = get_all_leafs();
+        for (auto it = leafs.begin(); it != leafs.end(); ++it) {
+            auto branch_nodes = traverse_to_root(*it);
+            int branch = it - leafs.begin();
+            for (auto n : branch_nodes) {
+                log_str += std::to_string(branch) + ',';
+                log_str += n->data.log() + '\n';
+            }
+        }
+        return log_str;
     }
 
 private:
