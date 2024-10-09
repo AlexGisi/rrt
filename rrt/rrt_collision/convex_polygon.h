@@ -6,6 +6,7 @@
 #define RRT_PLANNER_CONVEX_POLYGON_H
 
 #include <vector>
+#include <string>
 #include <rrt_collision/vector_2d.h>
 
 namespace rrt::collision {
@@ -36,7 +37,8 @@ public:
     void translate(const Vector2D& offset);
     void rotate(float angle_rad, const Vector2D& origin = Vector2D(0.0, 0.0));
 
-    std::string log();
+    std::string log_header();
+    std::string log() const;
 private:
     std::vector<Vector2D> vertices;
 };

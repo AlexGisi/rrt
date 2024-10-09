@@ -8,6 +8,7 @@
 
 
 #include "convex_polygon.h"
+#include <rrt_logging/util.h>
 
 namespace rrt::collision {
 
@@ -90,11 +91,21 @@ void ConvexPolygon::rotate(float angle_rad, const Vector2D& origin) {
     }
 }
 
-std::string ConvexPolygon::log() {
+std::string ConvexPolygon::log_header() {
+    std::string s;
+    for(int i = 0; i < vertices.size(); ++i) {
+        s += "x" + std::to_string(i) + ',' + "y" + std::to_string(i) + ',';
+    }
+     return s;
+}
+
+
+std::string ConvexPolygon::log() const {
      std::vector<float> vs;
      for (auto const &v : vertices) {
          vs.push_back(v.x());
          vs.push_back(v.y());
      }
+     return rrt::util::comma_join(vs);
  }
 }

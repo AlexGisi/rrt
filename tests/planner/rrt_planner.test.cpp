@@ -12,7 +12,7 @@ void q_2a(const std::filesystem::path& log_dir) {
     Logger<Tree<DubinsState>> logger(log_dir / "tree.csv", false);
 
     rrt::planner::RRTConfiguration config(1000, std::nullopt,
-                                          0, 1,
+                                          0, 1, false,
                                           -10, 10,
                                           -10, 10,
                                           0, 1.0);
@@ -31,7 +31,7 @@ void q_2c(const std::filesystem::path& log_dir) {
     Logger<Tree<DubinsState>> logger(log_dir / "tree.csv", false);
 
     rrt::planner::RRTConfiguration config(1000, std::nullopt,
-                                          0.9, 1,
+                                          0.9, 1, false,
                                           -10, 10,
                                           -10, 10,
                                           0, 1.0);
@@ -53,7 +53,7 @@ void q_2d(const std::filesystem::path& log_dir) {
     Logger<Tree<DubinsState>> logger(log_dir / "tree.csv", false);
 
     rrt::planner::RRTConfiguration config(1000, std::nullopt,
-                                          0.5, 3,
+                                          0.5, 3, false,
                                           -10, 10,
                                           -10, 10,
                                           0, 1.0);

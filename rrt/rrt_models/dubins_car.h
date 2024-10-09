@@ -18,8 +18,10 @@ public:
     static DubinsState sample(float px_lower, float px_upper, float py_lower, float py_upper);
     static float weighted_distance(DubinsState state0, DubinsState state1);
     static float euclidean_distance(DubinsState state0, DubinsState state1);
+    static DubinsState interpolate(const DubinsState &state0, const DubinsState &state1, float s);
 
     bool violates_constraints() const;
+    DubinsState after_brake() const;
 
     static std::string log_header();
     std::string log();
@@ -73,9 +75,10 @@ public:
     void step(DubinsCommand command, float dt=0.05);
     void reset();
     rrt::collision::ConvexPolygon get_polygon() const;
+    bool in_collision(const std::vector<collision::ConvexPolygon>& polygons) const;
 
     static std::string log_header();
-    std::string log();
+    std::string log() const;
 
 private:
     float l;

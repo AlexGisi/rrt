@@ -52,9 +52,38 @@ float DubinsState::euclidean_distance(DubinsState state0, DubinsState state1) {
     return std::sqrt(d);
 }
 
+DubinsState DubinsState::interpolate(const DubinsState &state0, const DubinsState &state1, float s) {
+    float q = 1 - s;
+    float px = state0.px * q + state1.px * s;
+    float py = state0.py * q + state1.py * s;
+    float theta = state0.theta * q + s * state1.theta;
+    float v = state0.v * q + s * state1.v;
+    float phi = state0.phi * q + s * state1.phi;
+    return {px, py, theta, v, phi};
+}
+
+
 bool DubinsState::violates_constraints() const {
     return v < v_min || v > v_max || phi < phi_min || phi > phi_max;
 }
+
+DubinsState DubinsState::after_brake() const {
+    if (v <= 0.0f) {
+        return *this;
+    }
+
+    // Calculate stopping distance using kinematic equation:
+    // v^2 = v0^2 + 2a * s => s = - (v0^2) / (2a)
+    float stopping_distance = (v * v) / (-2.0f * -10.0f);
+
+    float new_px = px + stopping_distance * std::cos(theta);
+    float new_py = py + stopping_distance * std::sin(theta);
+
+    DubinsState state_final(new_px, new_py, theta, 0.0f, 0.0f);
+
+    return state_final;
+}
+
 
 std::string DubinsState::log_header() {
     return {"x,y,theta,v,phi"};
@@ -94,12 +123,23 @@ rrt::collision::ConvexPolygon DubinsCar::get_polygon() const {
     return rect;
 }
 
+bool DubinsCar::in_collision(const std::vector<collision::ConvexPolygon>& polygons) const {
+    for (auto const &polygon : polygons) {
+        if (get_polygon().collides(polygon)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
 std::string DubinsCar::log_header() {
     return {"x0,y0,x1,y1,x2,y2,x3,y3,width,height"};
 }
 
-std::string DubinsCar::log() {
-    auto r = get_polygon();
-    auto s = rrt::util::comma_join({})
+std::string DubinsCar::log() const {
+    const auto r = get_polygon();
+    auto s = r.log() + "," + std::to_string(width) + "," + std::to_string(height);
+    return s;
 }
 }

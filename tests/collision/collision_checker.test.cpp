@@ -1,10 +1,21 @@
+#include <cassert>
 #include <iostream>
+#include <filesystem>
+#include <filesystem>
+#include <xtensor/xarray.hpp>
+#include <xtensor/xrandom.hpp>
+#include <rrt_models/dubins_car.h>
+#include <rrt_logging/util.h>
+#include <rrt_logging/logger.h>
 #include <rrt_collision/convex_polygon.h>
 #include <rrt_collision/collision_checker.h>
+#include <rrt_planner/rrt_planner.h>
 
 using namespace rrt::collision;
+using namespace rrt::models;
+using namespace rrt::planner;
+using namespace rrt::tree;
 
-// Test functions
 void test_overlapping_polygons() {
     std::cout << "Running test_overlapping_polygons...\n";
 
@@ -113,7 +124,7 @@ void test_colinear_edges_no_overlap() {
     std::cout << "test_colinear_edges_no_overlap passed!\n\n";
 }
 
-int main() {
+void collision_test_suite() {
     test_overlapping_polygons();
     test_non_overlapping_polygons();
     test_touching_edges();
@@ -126,5 +137,122 @@ int main() {
     test_colinear_edges_no_overlap();
 
     std::cout << "All collision detection tests passed successfully!\n";
+}
+
+void q_3a(const std::filesystem::path &log_dir) {
+    Logger<rrt::models::DubinsState> state_logger(log_dir / "state.csv");
+    Logger<rrt::models::DubinsCommand> cmd_logger(log_dir / "cmd.csv");
+    Logger<rrt::collision::ConvexPolygon> obstacle_logger(log_dir / "obstacles.csv");
+    Logger<rrt::models::DubinsCar> car_logger(log_dir / "collision_states.csv");
+
+    rrt::models::DubinsCar car(0.5);
+    auto rect = rrt::collision::ConvexPolygon::create_rectangle(0.1, 1, {1, 0});
+
+    int trajectories = 20;
+    int steps = 200;
+    float time_traj = 10;  // seconds
+    float dt = time_traj / steps;
+
+    for (int j = 0; j < trajectories; j++) {
+        car.reset();
+        obstacle_logger.log(rect);
+
+        auto t = xt::linspace<float>(0, time_traj, steps);
+        float c = rrt::util::rand(0, 2*M_PI);
+        float d = rrt::util::rand(0, 2*M_PI);
+
+        auto a = 10 * xt::sin(10*t + c);
+        auto psi = 3 * xt::sin(4*t + d);
+
+        for (int i = 0; i < t.size(); ++i) {
+            auto cmd = rrt::models::DubinsCommand(a(i), psi(i));
+            car.step(cmd, dt);
+
+            if (car.in_collision({rect})) {
+                car_logger.log(car);
+                break;
+            }
+            state_logger.log(car.get_state());
+            cmd_logger.log(cmd);
+        }
+        state_logger.increment_episode();
+        cmd_logger.increment_episode();
+        obstacle_logger.increment_episode();
+        car_logger.increment_episode();
+    }
+}
+
+void q_3b(const std::filesystem::path &log_dir) {
+    Logger<Tree<DubinsState>> state_logger(log_dir / "tree.csv", false);
+    Logger<ConvexPolygon> obstacle_logger(log_dir / "obstacles.csv");
+    Logger<DubinsCar> collision_logger(log_dir / "collision_states.csv");
+
+    DubinsCar car(0.5);
+
+    auto rect1 = ConvexPolygon::create_rectangle(rrt::util::rand(2.0, 6.0), rrt::util::rand(0.5, 3.0), {rrt::util::rand(-8, -2), rrt::util::rand(-4, -8)});
+    auto rect2 = ConvexPolygon::create_rectangle(rrt::util::rand(0.5, 2.0), rrt::util::rand(2.5, 5.0), {rrt::util::rand(2, 10), rrt::util::rand(-8, 8)});
+    auto rect3 = ConvexPolygon::create_rectangle(rrt::util::rand(0.5, 2.0), rrt::util::rand(0.5, 3.0), {rrt::util::rand(-8, 8), rrt::util::rand(3, 9)});
+    std::vector<ConvexPolygon> obstacles = {rect1, rect2, rect3};
+
+    rrt::planner::RRTConfiguration config(1000, std::nullopt,
+                                          0, 1, false,
+                                          -10, 10,
+                                          -10, 10,
+                                          0, 1.0);
+    DubinsState start = {0, 0, 0, 0, 0};
+    DubinsState goal = {0, 0, 0, 0, 0};
+
+    auto planner = RRTPlanner<DubinsCar, DubinsState, DubinsCommand>(car, start, goal);
+    bool success = planner.plan(config, &collision_logger, obstacles);
+    assert(success == false);
+
+    state_logger.log(planner.tree);
+    for (auto const& obstacle : obstacles) {
+        obstacle_logger.log(obstacle);
+    }
+}
+
+void q_3c(const std::filesystem::path &log_dir) {
+    Logger<Tree<DubinsState>> state_logger(log_dir / "tree.csv", false);
+    Logger<ConvexPolygon> obstacle_logger(log_dir / "obstacles.csv");
+    Logger<DubinsCar> collision_logger(log_dir / "collision_states.csv");
+
+    DubinsCar car(0.5);
+
+    auto rect1 = ConvexPolygon::create_rectangle(rrt::util::rand(2.0, 6.0), rrt::util::rand(0.5, 3.0), {rrt::util::rand(-8, -2), rrt::util::rand(-4, -8)});
+    auto rect2 = ConvexPolygon::create_rectangle(rrt::util::rand(0.5, 2.0), rrt::util::rand(2.5, 5.0), {rrt::util::rand(2, 10), rrt::util::rand(-8, 8)});
+    auto rect3 = ConvexPolygon::create_rectangle(rrt::util::rand(0.5, 2.0), rrt::util::rand(0.5, 3.0), {rrt::util::rand(-8, 8), rrt::util::rand(3, 9)});
+    std::vector<ConvexPolygon> obstacles = {rect1, rect2, rect3};
+
+    rrt::planner::RRTConfiguration config(1000, std::nullopt,
+                                          0, 1, true,
+                                          -10, 10,
+                                          -10, 10,
+                                          0, 1.0);
+    DubinsState start = {0, 0, 0, 0, 0};
+    DubinsState goal = {0, 0, 0, 0, 0};
+
+    auto planner = RRTPlanner<DubinsCar, DubinsState, DubinsCommand>(car, start, goal);
+    bool success = planner.plan(config, &collision_logger, obstacles);
+    assert(success == false);
+
+    state_logger.log(planner.tree);
+    for (auto const& obstacle : obstacles) {
+        obstacle_logger.log(obstacle);
+    }
+}
+
+int main(int argc, char **argv) {
+    if (argc != 2) {
+        std::cout << "One argument required: path to log directory" << std::endl;
+        return EXIT_FAILURE;
+    }
+    xt::random::seed(time(nullptr));
+
+    std::filesystem::path log_dir = std::filesystem::absolute(argv[1]);
+    rrt::util::create_directory(log_dir);
+
+    q_3c(log_dir);
+
     return EXIT_SUCCESS;
 }
