@@ -7,6 +7,7 @@
 
 #include <string>
 #include <rrt_logging/util.h>
+#include <rrt_collision/convex_polygon.h>
 
 namespace rrt::models {
 class DubinsState {
@@ -71,9 +72,15 @@ public:
 
     void step(DubinsCommand command, float dt=0.05);
     void reset();
+    rrt::collision::ConvexPolygon get_polygon() const;
+
+    static std::string log_header();
+    std::string log();
 
 private:
     float l;
+    float width = 1.5f*l;
+    float height = 1.2f*l;
     DubinsState state;
 };
 }

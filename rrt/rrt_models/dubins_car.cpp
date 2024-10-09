@@ -3,10 +3,10 @@
 //
 
 #include <cmath>
-#include <stdexcept>
 #include <sstream>
 #include <rrt_models/dubins_car.h>
 #include <rrt_logging/util.h>
+#include <rrt_collision/vector_2d.h>
 
 namespace rrt::models {
 
@@ -80,5 +80,26 @@ void DubinsCar::step(DubinsCommand command, float dt) {
 
 void DubinsCar::reset() {
     state = DubinsState();
+}
+
+rrt::collision::ConvexPolygon DubinsCar::get_polygon() const {
+    rrt::collision::Vector2D origin_to_com(static_cast<float>(height * 0.8) / 2, 0);
+    rrt::collision::Vector2D origin_xy(state.px, state.py);
+
+    auto rect = rrt::collision::ConvexPolygon::create_rectangle(width, height);
+    rect.translate(origin_to_com);  // Now origin of car is at origin coordinates.
+    rect.rotate(state.theta);  // Rotate around car's origin.
+    rect.translate(origin_xy);
+
+    return rect;
+}
+
+std::string DubinsCar::log_header() {
+    return {"x0,y0,x1,y1,x2,y2,x3,y3,width,height"};
+}
+
+std::string DubinsCar::log() {
+    auto r = get_polygon();
+    auto s = rrt::util::comma_join({})
 }
 }

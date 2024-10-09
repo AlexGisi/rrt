@@ -21,7 +21,10 @@ set(SOURCE_FILES
         rrt/rrt_logging/logger.h
         rrt/rrt_logging/logger.cpp
         rrt/rrt_logging/util.h
-        rrt/rrt_logging/util.cpp)
+        rrt/rrt_logging/util.cpp
+        rrt/rrt_collision/convex_polygon.cpp
+        rrt/rrt_collision/convex_polygon.h
+        rrt/rrt_collision/vector_2d.h)
 
 set(INCLUDE_DIRECTORIES
         rrt/rrt_models
