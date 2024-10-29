@@ -8,9 +8,7 @@
 #include <iostream>
 #include <vector>
 #include <memory>
-#include <unordered_map>
-#include <stack>
-#include <rrt_logging/util.h>
+#include <functional>
 
 namespace rrt::tree {
 
@@ -18,27 +16,35 @@ template <typename Loggable>
 class TreeNode {
 public:
     Loggable data;
-    std::weak_ptr<TreeNode<Loggable>> parent;
-    std::vector<std::shared_ptr<TreeNode<Loggable>>> children;
+    std::weak_ptr<TreeNode> parent;
+    std::vector<std::shared_ptr<TreeNode>> children;
+
+    std::string log_header() const {
+        return data.log_header();
+    }
+
+    std::string log() const {
+        return data.log();
+    }
 
     explicit TreeNode(const Loggable& data) : data(data) {}
 };
 
-template <typename T>
+template <typename Loggable>
 class Tree {
 public:
-    using NodePtr = std::shared_ptr<TreeNode<T>>;
+    using NodePtr = std::shared_ptr<TreeNode<Loggable>>;
 
     Tree() = default;
 
-    NodePtr add_root(const T& data) {
-        root = std::make_shared<TreeNode<T>>(data);
+    NodePtr add_root(const Loggable& data) {
+        root = std::make_shared<TreeNode<Loggable>>(data);
         nodes.push_back(root);
         return root;
     }
 
-    NodePtr add_node(const T& data, NodePtr parent) {
-        auto node = std::make_shared<TreeNode<T>>(data);
+    NodePtr add_node(const Loggable& data, NodePtr parent) {
+        auto node = std::make_shared<TreeNode<Loggable>>(data);
         node->parent = parent;
         parent->children.push_back(node);
         nodes.push_back(node);
@@ -69,14 +75,12 @@ public:
         return path;
     }
 
-    template <typename DistanceFunc>
-    NodePtr find_nearest(const T& point, DistanceFunc distance_func) const {
+    NodePtr find_nearest(const Loggable& point, std::function<float(Loggable, Loggable)> distance_func) const {
         NodePtr nearest = nullptr;
         double min_distance = std::numeric_limits<double>::max();
 
         for (const auto& node : nodes) {
-            double distance = distance_func(node->data, point);
-            if (distance < min_distance) {
+            if (const double distance = distance_func(node->data, point); distance < min_distance) {
                 min_distance = distance;
                 nearest = node;
             }
@@ -85,8 +89,10 @@ public:
     }
 
     std::string log_header() {
-        std::string data_header = T::log_header();
-        std::string header = "branch," + data_header;
+        std::string header;
+        if (!nodes.empty()) {
+            header = nodes[0]->log_header();
+        }
         return header;
     }
 
@@ -95,7 +101,7 @@ public:
         auto leafs = get_all_leafs();
         for (auto it = leafs.begin(); it != leafs.end(); ++it) {
             auto branch_nodes = traverse_to_root(*it);
-            int branch = it - leafs.begin();
+            const int branch = it - leafs.begin();
             for (auto n : branch_nodes) {
                 log_str += std::to_string(branch) + ',';
                 log_str += n->data.log() + '\n';

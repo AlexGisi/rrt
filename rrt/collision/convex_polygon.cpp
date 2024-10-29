@@ -6,35 +6,37 @@
 // Ref: https://dyn4j.org/2010/01/sat/
 //
 
-
-#include "convex_polygon.h"
-#include <rrt_logging/util.h>
+#include <array>
+#include <collision/convex_polygon.h>
+#include <util/util.h>
 
 namespace rrt::collision {
 
- ConvexPolygon ConvexPolygon::create_rectangle(float width,
-                                      float height,
-                                      const Vector2D& origin,
-                                      float orientation) {
-    std::vector<Vector2D> vertices = {
-            Vector2D(-width / 2.0f, -height / 2.0f),
-            Vector2D(width / 2.0f, -height / 2.0f),
-            Vector2D(width / 2.0f, height / 2.0f),
-            Vector2D(-width / 2.0f, height / 2.0f)
+ ConvexPolygon ConvexPolygon::create_rectangle(const double width,
+                                              const double height,
+                                              const Vector2D& origin,
+                                              const double orientation) {
+     const std::vector vertices = {
+            Vector2D(-width / 2.0, -height / 2.0),
+            Vector2D(width / 2.0, -height / 2.0),
+            Vector2D(width / 2.0, height / 2.0),
+            Vector2D(-width / 2.0, height / 2.0)
     };
 
     ConvexPolygon rectangle(vertices);
 
-    if (orientation != 0.0f) {
+    if (orientation != 0.0) {
         rectangle.rotate(orientation);
     }
 
-    if (origin.x() != 0.0f || origin.y() != 0.0f) {
+    if (origin.x() != 0.0 || origin.y() != 0.0) {
         rectangle.translate(origin);
     }
 
     return rectangle;
 }
+
+ConvexPolygon::ConvexPolygon(const std::vector<Vector2D> &_vertices) : vertices(_vertices) {}
 
 bool ConvexPolygon::collides(const ConvexPolygon &other) const {
     auto axes = get_axes();
@@ -42,9 +44,9 @@ bool ConvexPolygon::collides(const ConvexPolygon &other) const {
     axes.insert(axes.end(), axes_other.begin(), axes_other.end());
 
     for (auto const &axis : axes) {
-        Interval i1 = get_projection_bounds(axis);
-        Interval i2 = other.get_projection_bounds(axis);
-        if (!i1.overlap(i2)) {
+        util::ClosedInterval i1 = get_projection_bounds(axis);
+        util::ClosedInterval i2 = other.get_projection_bounds(axis);
+        if (!i1.intersects(i2)) {
             return false;
         }
     }
@@ -63,12 +65,11 @@ std::vector<Vector2D> ConvexPolygon::get_axes() const {
     return axes;
 }
 
-Interval ConvexPolygon::get_projection_bounds(Vector2D axis) const {
-    float proj_min = axis.dot(vertices[0]);
-    float proj_max = proj_min;
+util::ClosedInterval ConvexPolygon::get_projection_bounds(const Vector2D axis) const {
+    double proj_min = axis.dot(vertices[0]);
+    double proj_max = proj_min;
     for (auto const &v : vertices) {
-        float p = axis.dot(v);
-        if (p < proj_min) {
+        if (const double p = axis.dot(v); p < proj_min) {
             proj_min = p;
         } else if (p > proj_max) {
             proj_max = p;
@@ -83,7 +84,7 @@ void ConvexPolygon::translate(const Vector2D& offset) {
     }
 }
 
-void ConvexPolygon::rotate(float angle_rad, const Vector2D& origin) {
+void ConvexPolygon::rotate(const double angle_rad, const Vector2D& origin) {
     for (auto& vertex : vertices) {
         Vector2D translated = vertex - origin;
         Vector2D rotated = translated.rotated(angle_rad);
@@ -91,7 +92,7 @@ void ConvexPolygon::rotate(float angle_rad, const Vector2D& origin) {
     }
 }
 
-std::string ConvexPolygon::log_header() {
+std::string ConvexPolygon::log_header() const {
     std::string s;
     for(int i = 0; i < vertices.size(); ++i) {
         s += "x" + std::to_string(i) + ',' + "y" + std::to_string(i) + ',';
@@ -99,13 +100,12 @@ std::string ConvexPolygon::log_header() {
      return s;
 }
 
-
 std::string ConvexPolygon::log() const {
-     std::vector<float> vs;
+     std::vector<double> vs;
      for (auto const &v : vertices) {
          vs.push_back(v.x());
          vs.push_back(v.y());
      }
-     return rrt::util::comma_join(vs);
+     return util::comma_join<std::vector<double>>(vs);
  }
 }

@@ -11,7 +11,7 @@
 template <typename Loggable>
 class Logger {
 public:
-    Logger(const std::string& fp, bool _with_episode = true, bool _header = true)
+    explicit Logger(const std::string& fp, const bool _with_episode = true, const bool _header = true)
     : filepath(fp), file(fp), header_written(!_header), episode(0), with_episode(_with_episode) {
         if (!file.is_open()) {
             throw std::runtime_error("Failed to open log file.");

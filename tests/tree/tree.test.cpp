@@ -5,7 +5,7 @@
 #include <limits>
 #include <cassert>
 #include <utility>
-#include <rrt_tree/tree.h>
+#include <tree/tree.h>
 
 using namespace rrt::tree;
 

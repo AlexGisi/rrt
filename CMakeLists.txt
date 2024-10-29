@@ -10,28 +10,26 @@ find_package(xtensor REQUIRED)
 include_directories(${CMAKE_SOURCE_DIR}/rrt)
 
 set(SOURCE_FILES
-        rrt/rrt_models/dubins_car.h
-        rrt/rrt_models/dubins_car.cpp
-        rrt/rrt_collision/collision_checker.h
-        rrt/rrt_collision/collision_checker.cpp
-        rrt/rrt_tree/tree.h
-        rrt/rrt_tree/tree.cpp
-        rrt/rrt_planner/rrt_planner.h
-        rrt/rrt_planner/rrt_planner.cpp
-        rrt/rrt_logging/logger.h
-        rrt/rrt_logging/logger.cpp
-        rrt/rrt_logging/util.h
-        rrt/rrt_logging/util.cpp
-        rrt/rrt_collision/convex_polygon.cpp
-        rrt/rrt_collision/convex_polygon.h
-        rrt/rrt_collision/vector_2d.h)
+        rrt/tree/tree.h
+        rrt/planner/rrt_planner.h
+        rrt/logging/logger.h
+        rrt/util/util.h
+        rrt/util/util.cpp
+        rrt/collision/convex_polygon.cpp
+        rrt/collision/convex_polygon.h
+        rrt/util/vector_2d.h
+        rrt/util/interval.h
+        rrt/models/Model.h
+        rrt/models/dubins.cpp
+        rrt/models/dubins.h)
 
 set(INCLUDE_DIRECTORIES
-        rrt/rrt_models
-        rrt/rrt_collision
-        rrt/rrt_tree
-        rrt/rrt_planner
-        rrt/rrt_logging)
+    rrt/models
+    rrt/collision
+    rrt/tree
+    rrt/planner
+    rrt/logging
+    rrt/rrt_util)
 
 add_library(rrt_lib ${SOURCE_FILES})
 target_include_directories(rrt_lib PUBLIC ${xtensor_INCLUDE_DIRS})
@@ -43,7 +41,19 @@ function(add_rrt_test TEST_NAME TEST_SOURCE)
     target_include_directories(${TEST_NAME} PRIVATE ${INCLUDE_DIRECTORIES})
 endfunction()
 
-add_rrt_test(dubins_car_test tests/models/dubins_car.test.cpp)
+# --- Tests ---
+# Models
+add_rrt_test(dubins_random_test tests/models/dubins_random.test.cpp)
+
+# Collisions
 add_rrt_test(collision_checker_test tests/collision/collision_checker.test.cpp)
-add_rrt_test(rrt_planner_test tests/planner/rrt_planner.test.cpp)
+add_rrt_test(dubins_paths_test tests/collision/dubins_paths.test.cpp)
+
+# Planner
+add_rrt_test(plan_with_obstacles_test tests/planner/plan_with_obstacles.test.cpp)
+
+# Tree
 add_rrt_test(tree_test tests/tree/tree.test.cpp)
+
+# Util
+add_rrt_test(interval_test tests/util/interval.test.cpp)
