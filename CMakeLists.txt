@@ -4,9 +4,6 @@ project(rrt_planner)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(xtl REQUIRED)
-find_package(xtensor REQUIRED)
-
 include_directories(${CMAKE_SOURCE_DIR}/rrt)
 
 set(SOURCE_FILES
@@ -32,8 +29,6 @@ set(INCLUDE_DIRECTORIES
     rrt/rrt_util)
 
 add_library(rrt_lib ${SOURCE_FILES})
-target_include_directories(rrt_lib PUBLIC ${xtensor_INCLUDE_DIRS})
-target_link_libraries(rrt_lib PUBLIC xtensor)
 
 function(add_rrt_test TEST_NAME TEST_SOURCE)
     add_executable(${TEST_NAME} ${TEST_SOURCE} ${SOURCE_FILES})
