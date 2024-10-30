@@ -16,8 +16,7 @@ set(SOURCE_FILES
         rrt/collision/convex_polygon.h
         rrt/util/vector_2d.h
         rrt/util/interval.h
-        rrt/models/Model.h
-        rrt/models/dubins.cpp
+        rrt/models/model.h
         rrt/models/dubins.h)
 
 set(INCLUDE_DIRECTORIES

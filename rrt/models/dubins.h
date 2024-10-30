@@ -13,11 +13,11 @@ namespace rrt::models {
 class DubinsState final : public State<DubinsState, 5> {
 public:
     static constexpr BoundArr state_bounds = {
-        std::nullopt,
-        std::nullopt,
-        util::ClosedInterval(-3.14, 3.14),
-        util::ClosedInterval(-10.0, 10.0),
-        util::ClosedInterval(-10.0, 10.0)
+        std::nullopt,  // x
+        std::nullopt,  // y
+        util::ClosedInterval(0, 2*M_PI), // theta
+        util::ClosedInterval(-5, 5), // velocity
+        util::ClosedInterval(-M_PI / 3, M_PI / 3)  // steer angle
     };
 
     DubinsState() : State(state_bounds) {}
@@ -30,15 +30,15 @@ public:
     }
 
     std::string log_header() const override {  // NOLINT
-        return "x,y,theta,v,phi,";
+        return "x,y,theta,v,phi";
     }
 };
 
 class DubinsCommand final : public Command<2> {
 public:
     static constexpr BoundArr command_bounds = {
-        util::ClosedInterval(-10.0, 10.0),
-        util::ClosedInterval(-3.0, 3.0)
+        util::ClosedInterval(-10.0, 10.0), // acceleration
+        util::ClosedInterval(-3.0, 3.0) // steer
     };
 
     DubinsCommand() : Command(command_bounds) {}
@@ -53,8 +53,8 @@ class DubinsModel final : public Model<DubinsState, DubinsCommand> {
 public:
     DubinsModel() = delete;
 
-    explicit DubinsModel(const float l, const float width, const float height)
-        : Model(DubinsState()), l_(l), width_(width), height_(height) {};
+    explicit DubinsModel(const float l, const float width, const float length)
+        : Model(DubinsState()), l_(l), width_(width), length_(length) {};
 
     void step(const DubinsCommand& cmd, const float dt) override {
         const auto u = cmd.u();
@@ -72,10 +72,10 @@ public:
     }
 
     collision::ConvexPolygon polygon() const override {
-        const collision::Vector2D origin_to_com(static_cast<float>(height_ * 0.8) / 2, 0);
+        const collision::Vector2D origin_to_com(static_cast<float>(length_ * 0.8) / 2, 0);
         const collision::Vector2D origin(state_.state()[0], state_.state()[1]);
 
-        auto rect = collision::ConvexPolygon::create_rectangle(width_, height_);
+        auto rect = collision::ConvexPolygon::create_rectangle(length_, width_);
         rect.translate(origin_to_com);  // Now origin of car is at origin coordinates.
         rect.rotate(state_.state()[2]);  // Rotate around car's origin.
         rect.translate(origin);
@@ -84,15 +84,15 @@ public:
     }
 
     std::string log_header() const override {
-        return state_.log_header();
+        return util::comma_join<std::vector<std::string>>({state_.log_header(), polygon().log_header()});
     }
 
     std::string log() const override {
-        return state_.log();
+        return util::comma_join<std::vector<std::string>>({state_.log(), polygon().log()});;
     }
 
 private:
-    double l_, width_, height_;
+    double l_, width_, length_;
 };
 };
 
