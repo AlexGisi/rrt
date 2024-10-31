@@ -53,4 +53,24 @@ double wrap_angle(double theta) {
     return theta;
 }
 
+std::string append_suffix_to_list(const std::string& input_list, const std::string& suffix) {
+    std::stringstream ss(input_list);
+    std::string item;
+    std::vector<std::string> elements;
+
+    while (std::getline(ss, item, ',')) {
+        elements.push_back(item + "_" + suffix);
+    }
+
+    std::string result;
+    for (size_t i = 0; i < elements.size(); ++i) {
+        result += elements[i];
+        if (i < elements.size() - 1) {
+            result += ",";
+        }
+    }
+
+    return result;
+}
+
 }

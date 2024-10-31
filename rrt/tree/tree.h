@@ -88,15 +88,15 @@ public:
         return nearest;
     }
 
-    std::string log_header() {
+    std::string log_header() const {
         std::string header;
         if (!nodes.empty()) {
             header = nodes[0]->log_header();
         }
-        return header;
+        return "branch," + header;
     }
 
-    std::string log() {
+    std::string log() const {
         std::string log_str;
         auto leafs = get_all_leafs();
         for (auto it = leafs.begin(); it != leafs.end(); ++it) {

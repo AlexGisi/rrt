@@ -40,23 +40,9 @@ public:
         func(static_cast<Derived*>(this));
     }
 
-    float distance(const Derived &other) {
-        float dist = 0;
-        for (int i = 0; i < nx_; i++) {
-            dist += std::pow(state_[i] - other.state()[i], 2);
-        }
-        return dist;
-    }
+    virtual double distance(const Derived &other) const = 0;
 
-    float weighted_distance(const Derived &other, const std::array<double, nx_> weights) {
-        float dist = 0;
-        for (int i = 0; i < nx_; i++) {
-            dist += weights[i] * std::pow(state_[i] - other.state()[i], 2);
-        }
-        return dist;
-    }
-
-    Derived interpolate(const Derived& other, const float weight) {
+    Derived interpolate(const Derived& other, const float weight) const {
         StateArr state_res;
         for (int i = 0; i < nx_; i++) {
             state_res[i] = state_[i] * weight + other.state()[i] * (1-weight);

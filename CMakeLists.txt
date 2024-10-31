@@ -45,6 +45,7 @@ add_rrt_test(dubins_paths_test tests/collision/dubins_paths.test.cpp)
 
 # Planner
 add_rrt_test(plan_with_obstacles_test tests/planner/plan_with_obstacles.test.cpp)
+add_rrt_test(plan_without_obstacles_test tests/planner/plan_without_obstacles.test.cpp)
 
 # Tree
 add_rrt_test(tree_test tests/tree/tree.test.cpp)

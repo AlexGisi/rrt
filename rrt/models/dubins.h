@@ -23,6 +23,20 @@ public:
     DubinsState() : State(state_bounds) {}
     explicit DubinsState(const std::array<double, 5> &x) : State(x, state_bounds) {}
 
+    double distance(const DubinsState &other) const override {
+        double dist = 0;
+        for (int i = 0; i < 5; i++) {
+            double d;
+            if (i == 2) {  // theta distance must be calculated distinctly
+                d = util::geodesic_distance(state_[i], other.state_[i]);
+            } else {
+                d = state_[i] - other.state()[i];
+            }
+            dist += std::pow(d, 2);
+        }
+        return dist;
+    }
+
     void randomize(const util::ClosedInterval xi, const util::ClosedInterval yi) {
         State::randomize();
         state_[0] = xi.sample();

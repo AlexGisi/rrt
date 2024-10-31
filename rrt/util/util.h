@@ -17,6 +17,7 @@ double rand(double a, double b);
 void create_directory(const std::filesystem::path& fp);
 double geodesic_distance(double theta0, double theta1);
 double wrap_angle(double theta);
+std::string append_suffix_to_list(const std::string& input_list, const std::string& suffix);
 
 template<typename T>
 std::vector<T> shuffle_vector(std::vector<T> vec) {

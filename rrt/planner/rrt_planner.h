@@ -5,12 +5,9 @@
 #ifndef RRT_PLANNER_RRT_PLANNER_H
 #define RRT_PLANNER_RRT_PLANNER_H
 
-#include <optional>
 #include <tree/tree.h>
 #include <util/util.h>
-#include <logging/logger.h>
 #include <collision/convex_polygon.h>
-#include <models/dubins.h>
 
 namespace rrt::planner {
 
@@ -64,10 +61,9 @@ public:
                     state_sampled.sample(config_.sampler);
                     model_.set_state(state_sampled);
                 } while (model_.in_collision(obstacles));  // Sample from free space.
-
             }
-            auto dist = [](StateT a, StateT b) -> double { return a.distance(b); };
-            auto node_nearest = tree_.find_nearest(state_sampled, dist);
+            auto dist_fun = [](StateT a, StateT b) -> double { return a.distance(b); };
+            auto node_nearest = tree_.find_nearest(state_sampled, dist_fun);
 
             // Simulate some commands from the nearest node, see which gets
             // closest to the sampled state.
@@ -88,7 +84,8 @@ public:
 
             // Line collision checking. Check the interpolated points between
             // sampled and new state at the resolution defined by the config.
-            auto ss  = util::arange<double>(0, 1, config_.line_check_resolution / dist_best);
+            double dist_to_best =  node_nearest->data.distance(state_best);
+            auto ss  = util::arange<double>(0, 1, config_.line_check_resolution / dist_to_best);
             bool collides = false;
             for (auto const &s : ss ) {
                 auto state_interp = node_nearest->data.interpolate(state_best, s);
@@ -105,7 +102,7 @@ public:
                 continue;
             }
 
-            if (!state_best.valid()) {
+            if (state_best.valid()) {
                 auto node_new = tree_.add_node(state_best, node_nearest);
 
                 if (state_best.distance(goal) < config_.tol) {
