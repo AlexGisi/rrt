@@ -1,11 +1,13 @@
 # rrt
 A ground-up implementation of the [RRT](https://en.wikipedia.org/wiki/Rapidly_exploring_random_tree) algorithm which respects kinodynamic constraints.
 
+![RRT Tree with Obstacle](img/tree-obstacle.png)
+
 ## Install
 There are no dependencies. Download the source and build with cmake.
 
-## Use
-Presently the implemented model in `rrt::models` is the `DubinsModel`. The `dubins_car_test` performs planning and logs the results to CSV. The [rrt-plot](https://github.com/AlexGisi/rrt-plot) library can be used to visualize the search and resulting path.
+## Try it out
+Build the project to generate the test binaries. Use the [rrt-plot](https://github.com/AlexGisi/rrt-plot) library to visualize the model and planner's test results. They're pretty!
 
 ## Features
 - Kinodynamic RRT (`rrt::planner`)
