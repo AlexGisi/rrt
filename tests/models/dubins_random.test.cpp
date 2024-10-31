@@ -9,29 +9,36 @@ using namespace rrt::models;
 using namespace rrt::collision;
 using namespace rrt::util;
 
-void dubins_random(const std::filesystem::path& log_dir) {
+void dubins_random(const std::filesystem::path &log_dir) {
     Logger<DubinsState> state_logger(log_dir / "state.csv");
-    DubinsModel car(0.5, 1.5, 1.0);
+    Logger<DubinsCommand> cmd_logger(log_dir / "cmd.csv");
+    Logger<DubinsModel> collision_logger(log_dir / "collision_states.csv");
 
-    constexpr int n_traj = 100;
-    constexpr int steps = 200;
-    constexpr float time_traj = 10;  // seconds
-    constexpr float dt = time_traj / steps;
+    DubinsModel car(0.5, 1, 1.5);
+    const auto obstacle = ConvexPolygon::create_rectangle(0.1, 3, {4.5, 0});
 
-    for (int i = 0; i < n_traj; ++i) {
+    constexpr int trajectory_n = 100;
+    constexpr double dt = 0.05;
+    constexpr double trajectory_time = 10;  // seconds
+    constexpr int step_n = trajectory_time / dt;
+
+    for (int j = 0; j < trajectory_n; j++) {
         car.set_state(DubinsState());
-        for (int s = 0; s < steps; ++s) {
+
+        for (int i = 0; i < step_n; ++i) {
             auto cmd = DubinsCommand();
             cmd.randomize();
 
             car.step(cmd, dt);
-            state_logger.log(car.state());
-
             if (!car.state().valid()) {
                 break;
             }
+            state_logger.log(car.state());
+            cmd_logger.log(cmd);
         }
         state_logger.increment_episode();
+        cmd_logger.increment_episode();
+        collision_logger.increment_episode();
     }
 }
 
