@@ -1,5 +1,5 @@
 # rrt
-A no-dependency implementation of the [RRT](https://en.wikipedia.org/wiki/Rapidly_exploring_random_tree) algorithm which respects kinodynamic constraints.
+A no-dependency implementation of the [RRT](https://en.wikipedia.org/wiki/Rapidly_exploring_random_tree) algorithm which respects kinodynamic constraints and can be extended to arbitrary models.
 
 ![RRT Tree with Obstacle](img/tree-obstacle.png)
 
