@@ -43,7 +43,7 @@ public:
             if (i == 2) {
                 state_res[i] = util::geodesic_interpolate(state_[i], other.state_[i], weight);
             } else {
-                state_res[i] = state_[i] * weight + other.state()[i] * (1-weight);
+                state_res[i] = state_[i] * (1-weight) + other.state()[i] * weight;
             }
         }
         return DubinsState(state_res);

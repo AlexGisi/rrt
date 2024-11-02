@@ -10,15 +10,16 @@
 using namespace rrt::models;
 
 void dubins_interpolate(const std::filesystem::path& log_dir) {
-    Logger<DubinsState> state_logger(log_dir / "state.csv");
+    Logger<DubinsModel> model_logger(log_dir / "state.csv");
 
+    DubinsModel car(0.8, 1.2, 1.8);
     const DubinsState start_state({0, 0, 0.3, 0, 0});
-    const DubinsState end_state({0, 2, 6.1, 0, 0});
+    const DubinsState end_state({5, 2, 6.1, 0, 0});
 
-    std::vector<DubinsState> states;
     for(double i = 0; i < 1; i = i + 0.1) {
-        states.push_back(start_state.interpolate(end_state, i));
-        state_logger.log(states.back());
+        auto interp_state = start_state.interpolate(end_state, i);
+        car.set_state(interp_state);
+        model_logger.log(car);
     }
 }
 
