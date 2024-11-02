@@ -42,13 +42,7 @@ public:
 
     virtual double distance(const Derived &other) const = 0;
 
-    Derived interpolate(const Derived& other, const float weight) const {
-        StateArr state_res;
-        for (int i = 0; i < nx_; i++) {
-            state_res[i] = state_[i] * weight + other.state()[i] * (1-weight);
-        }
-        return Derived(state_res);
-    }
+    virtual Derived interpolate(const Derived& other, double weight) const = 0;
 
     bool valid() const {
         for (int i = 0; i < nx_; i++) {

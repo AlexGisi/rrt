@@ -17,7 +17,8 @@ set(SOURCE_FILES
         rrt/util/vector_2d.h
         rrt/util/interval.h
         rrt/models/model.h
-        rrt/models/dubins.h)
+        rrt/models/dubins.h
+        tests/models/dubins_interpolate.test.cpp)
 
 set(INCLUDE_DIRECTORIES
     rrt/models
@@ -38,6 +39,7 @@ endfunction()
 # --- Tests ---
 # Models
 add_rrt_test(dubins_random_test tests/models/dubins_random.test.cpp)
+add_rrt_test(dubins_interpolate_test tests/models/dubins_interpolate.test.cpp)
 
 # Collisions
 add_rrt_test(collision_checker_test tests/collision/collision_checker.test.cpp)

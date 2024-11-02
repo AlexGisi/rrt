@@ -37,6 +37,18 @@ public:
         return dist;
     }
 
+    DubinsState interpolate(const DubinsState &other, const double weight) const override {
+        StateArr state_res;
+        for (int i = 0; i < 5; i++) {
+            if (i == 2) {
+                state_res[i] = util::geodesic_interpolate(state_[i], other.state_[i], weight);
+            } else {
+                state_res[i] = state_[i] * weight + other.state()[i] * (1-weight);
+            }
+        }
+        return DubinsState(state_res);
+    }
+
     void randomize(const util::ClosedInterval xi, const util::ClosedInterval yi) {
         State::randomize();
         state_[0] = xi.sample();
