@@ -110,6 +110,26 @@ public:
         return log_str;
     }
 
+    static Tree from_vector(const std::vector<Loggable>& items) {
+        Tree tree;
+
+        if (items.empty()) {
+            return tree;
+        }
+
+        NodePtr current_node = tree.add_root(items[0]);
+        for (size_t i = 1; i < items.size(); ++i) {
+            current_node = tree.add_node(items[i], current_node);
+        }
+
+        return tree;
+    }
+
+    void clear() {
+        root = nullptr;
+        nodes.clear();
+    }
+
 private:
     NodePtr root;
     std::vector<NodePtr> nodes;

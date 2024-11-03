@@ -36,10 +36,6 @@ public:
         }
     }
 
-    void sample(std::function<void(Derived*)> func) {
-        func(static_cast<Derived*>(this));
-    }
-
     virtual double distance(const Derived &other) const = 0;
 
     virtual Derived interpolate(const Derived& other, double weight) const = 0;

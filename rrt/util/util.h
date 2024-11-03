@@ -53,4 +53,19 @@ std::vector<T> arange(T start, T stop, T step = 1) {
         values.push_back(value);
     return values;
 }
+
+template <typename T>
+std::vector<T> reverse_vector(const std::vector<T>& input) {
+    std::vector<T> reversed(input.rbegin(), input.rend());
+    return reversed;
+}
+
+template <typename T>
+std::vector<T> concatenate_vectors(const std::vector<T>& vec1, const std::vector<T>& vec2) {
+    std::vector<T> result;
+    result.reserve(vec1.size() + vec2.size());  // Reserve space for both vectors
+    result.insert(result.end(), vec1.begin(), vec1.end());  // Insert first vector
+    result.insert(result.end(), vec2.begin(), vec2.end());  // Insert second vector
+    return result;
+}
 }
