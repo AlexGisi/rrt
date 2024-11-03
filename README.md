@@ -10,7 +10,7 @@ There are no dependencies. Download the source and build with cmake.
 Build the project to generate the test binaries. Use the [rrt-plot](https://github.com/AlexGisi/rrt-plot) library to visualize the model and planner's test results. They're pretty!
 
 ## Features
-- Kinodynamic RRT (`rrt::planner`)
+- Time-limited bidirectional RRT which respects kinematic constraints of a user-defined robot model (`rrt::planner`)
 - Dubins car dynamic model (`rrt::models`)
 - Support for adding any other model by subclassing from `rrt::models::Model`, `rrt::models::State`, and `rrt::models::Command`
 - CSV logging for arbitrary objects which implement `log` and `log_header` methods
